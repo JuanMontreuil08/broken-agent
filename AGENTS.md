@@ -29,7 +29,8 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
 - Traza 3: el lease se considera vencido con `leaseUntil < now`; el contrato dice que al alcanzar el deadline (`<=`).
 - `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
 - Por decidir con Juan:
-  - Job que se cae (lease vence) en su 3.er intento: ¿`failed` o se reintenta?
+  - **Retomar primero.** Job que se cae (lease vence) en su 3.er intento: ¿`failed` o se reintenta?
+    Hoy no pasa por el `catch`, vuelve a ser reclamable y se ejecuta una 4.ª vez.
   - Idempotencia de `schedule`: ¿`15:00:00Z` y `15:00:00.000Z` son el mismo timestamp?
   - Desempate por id en `list()`: hoy usa `localeCompare` (depende del locale); ¿orden por código de carácter?
 - Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.
