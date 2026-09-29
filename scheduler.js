@@ -146,7 +146,7 @@ function createScheduler({ store, clock, execute, workerId }) {
           await store.transaction((tx) => {
             const current = tx.get(claimed.id);
             if (!ownsClaim(current)) return;
-            const status = current.attempts > 3 ? "failed" : "pending";
+            const status = current.attempts >= 3 ? "failed" : "pending";
             tx.put({ ...current, status });
           });
         }

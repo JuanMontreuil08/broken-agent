@@ -22,9 +22,10 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   `adversarial.test.js`, arreglo con `claimId` único por claim.
 - Decisión de Juan: si el lease venció pero nadie retomó el job, el resultado del proceso
   original sigue contando (su `claimId` es el vigente).
+- Traza 2 (tras la 3.ª ejecución fallida el job seguía pending): test en
+  `adversarial.test.js`, arreglo con `attempts >= 3`.
 
 ## Pendiente
-- Traza 2: `scheduler.js` usa `attempts > 3`; permite 4 ejecuciones. Debe quedar `failed` tras la 3.ª.
 - Traza 3: el lease se considera vencido con `leaseUntil < now`; el contrato dice que al alcanzar el deadline (`<=`).
 - `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
 - Por decidir con Juan:
