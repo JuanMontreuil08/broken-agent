@@ -5,6 +5,8 @@
  * Todos los tests públicos pasan, pero todavía hay fallas sutiles de producción.
  * Mantén intacta la interfaz createScheduler y endurece la implementación.
  */
+const { randomUUID } = require("node:crypto");
+
 function createScheduler({ store, clock, execute, workerId }) {
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const canonical = (value) => {
@@ -119,6 +121,9 @@ function createScheduler({ store, clock, execute, workerId }) {
             status: "running",
             attempts: due.attempts + 1,
             owner: workerId,
+            // Identifica este claim en particular: un proceso que reinicia con el
+            // mismo workerId no debe poder cerrar el claim de otra ejecución.
+            claimId: randomUUID(),
             leaseUntil: now + 30_000,
           };
           tx.put(running);
@@ -126,19 +131,21 @@ function createScheduler({ store, clock, execute, workerId }) {
         });
         if (!claimed) return;
         visited.add(claimed.id);
+        const ownsClaim = (current) =>
+          current?.status === "running" && current.claimId === claimed.claimId;
 
         try {
           await execute(clone(claimed));
           await store.transaction((tx) => {
             const current = tx.get(claimed.id);
-            if (current?.status === "running" && current.owner === workerId) {
+            if (ownsClaim(current)) {
               tx.put({ ...current, status: "completed" });
             }
           });
         } catch {
           await store.transaction((tx) => {
             const current = tx.get(claimed.id);
-            if (current?.status !== "running" || current.owner !== workerId) return;
+            if (!ownsClaim(current)) return;
             const status = current.attempts > 3 ? "failed" : "pending";
             tx.put({ ...current, status });
           });
