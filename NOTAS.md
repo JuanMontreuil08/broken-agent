@@ -17,3 +17,12 @@ Versión para el test:
 > Un proceso que se cayó o quedó colgado no puede asumir que la tarea sigue siendo suya
 > solo porque su nombre aparece en la base de datos, porque otro proceso (incluso con el
 > mismo nombre) pudo haberla tomado. Su resultado debe ignorarse.
+
+## 2026-09-29 — Traza 2: cuarta ejecución
+
+Traza: el job falla en su 1.ª, 2.ª y 3.ª ejecución. Tras la 3.ª, `attempts` vale 3 y
+`3 > 3` es falso, así que vuelve a pending y se ejecuta una 4.ª vez.
+
+Lo que nunca debería pasar:
+
+> lo inaceptable es que falle en la 3 y siga pending, deberi acambair a failed

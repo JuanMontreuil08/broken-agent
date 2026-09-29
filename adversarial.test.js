@@ -106,3 +106,27 @@ test("traza 1: un proceso viejo con el mismo workerId no puede reabrir el claim 
   const final = (await processB.list()).find((entry) => entry.id === job.id);
   assert.equal(final.status, "completed");
 });
+
+// Lo inaceptable es que falle en la 3.ª ejecución y siga pending: debe cambiar a failed.
+test("traza 2: tras la 3.ª ejecución fallida el job queda failed y no se ejecuta una 4.ª", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const calls = [];
+  const execute = async (entry) => {
+    calls.push(entry.id);
+    throw new Error("falla siempre");
+  };
+  const scheduler = createScheduler({ store, clock, execute, workerId: "w1" });
+  await scheduler.schedule(job);
+
+  for (let run = 1; run <= 3; run += 1) {
+    await scheduler.runDue();
+  }
+
+  const afterThird = (await scheduler.list()).find((entry) => entry.id === job.id);
+  assert.equal(afterThird.attempts, 3);
+  assert.equal(afterThird.status, "failed", "tras 3 ejecuciones fallidas debe quedar failed");
+
+  await scheduler.runDue();
+  assert.equal(calls.length, 3, "no debe haber una 4.ª ejecución");
+});
