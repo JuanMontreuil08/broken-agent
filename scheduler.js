@@ -107,7 +107,9 @@ function createScheduler({ store, clock, execute, workerId }) {
               typeof job.leaseUntil === "number" &&
               job.leaseUntil < now
             ) {
-              tx.put({ ...job, status: "pending" });
+              // Un intento se cuenta al reclamar: si el 3.º se cayó sin avisar,
+              // el job no se vuelve a ejecutar.
+              tx.put({ ...job, status: job.attempts >= 3 ? "failed" : "pending" });
             }
           }
           const due = ordered(tx.list()).find((job) =>

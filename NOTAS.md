@@ -26,3 +26,23 @@ Traza: el job falla en su 1.ª, 2.ª y 3.ª ejecución. Tras la 3.ª, `attempts`
 Lo que nunca debería pasar:
 
 > lo inaceptable es que falle en la 3 y siga pending, deberi acambair a failed
+
+## 2026-09-29 — Traza 2b: el 3.er intento se cae sin avisar
+
+Traza: el job falla en su 1.ª y 2.ª ejecución. En la 3.ª el worker se cae o queda
+colgado y no avisa. A los 30 s el lease vence, el job vuelve a pending y otro worker lo
+ejecuta una 4.ª vez (`attempts` = 4).
+
+Lo que nunca debería pasar:
+
+> no me hace bue nsentido que siga pasando a mas de 3 intntos
+
+Lo que pensé antes de decidir:
+
+> se esta dando la oportundiad de intentat con otro worker hacer el job eso me parece como backup
+
+Decisión:
+
+> ok por el limite entienod el contrto es la fuente de la verdad
+
+> yo pienso que onsiderar tanto failed como casos que el job se quedo colgado consider failed  paa trazabilidad pero omo recuperar ese job?
