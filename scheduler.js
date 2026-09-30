@@ -101,8 +101,10 @@ function createScheduler({ store, clock, execute, workerId }) {
     async runDue() {
       const visited = new Set();
       while (true) {
-        const now = clock.now().getTime();
         const claimed = await store.transaction((tx) => {
+          // La hora se lee dentro de la transacción: si hubo que esperar el turno,
+          // el lease igual dura 30 s desde que se toma el job.
+          const now = clock.now().getTime();
           for (const job of tx.list()) {
             if (
               job.status === "running" &&

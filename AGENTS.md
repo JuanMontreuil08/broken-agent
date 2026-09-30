@@ -34,7 +34,9 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   u offset distintos). Arreglo: comparar `Date.parse`. Se devuelve el job original.
 - Desempate por id en `list()`: decisión de Juan, código de carácter (no idioma). Arreglo:
   comparar con `<`/`>` en vez de `localeCompare`.
+- `now` antes de la transacción (acortaba el lease si había que esperar el turno): test en
+  `adversarial.test.js`, arreglo leyendo `now` dentro de la transacción del claim.
 
 ## Pendiente
-- `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
+- Revisión final (cancelación, persistencia, supuestos no verificados) antes de `review.json`.
 - Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.

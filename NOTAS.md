@@ -88,3 +88,13 @@ Lo que pensé:
 Decisión:
 
 > si aplica el cambio con codigo de caracter y agreg en notas lo que acorado
+
+## 2026-09-29 — now leído antes de la transacción del claim
+
+Traza: t=0 `w1` lee el reloj y guarda 0. Espera 5 s su turno en la base de datos. A t=5 s
+toma el job y calcula el vencimiento con el 0 guardado: 30 s. A t=30 s `w2` lo ve vencido y
+también lo toma, aunque `w1` solo lleva 25 s.
+
+Lo que nunca debería pasar:
+
+> ya entiedi lo inaceptable es que el worker pierda tiempo de esos 5 segundso deberi tomar desd que tma el job, es inaceptabe que tome antes por el riesgo de solapamiento con otro worker que vio ya vencio  alas 30segundos
