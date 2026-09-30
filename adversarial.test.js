@@ -172,3 +172,32 @@ test("traza 2b: si el 3.er intento se cae sin avisar, el job queda failed y no h
   assert.equal(final.attempts, 3);
   assert.equal(final.status, "failed");
 });
+
+// Es inaceptable que espere más de los 30 segundos: si falla, la recuperación debe
+// ser inmediata al llegar al deadline.
+test("traza 3: a los 30 s exactos otro worker puede tomar el job", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+
+  // t=0: w1 toma el job y queda colgado.
+  const hung = blockingExecutor();
+  const worker1 = createScheduler({ store, clock, execute: hung.execute, workerId: "w1" });
+  await worker1.schedule(job);
+  worker1.runDue();
+  await hung.started;
+
+  // t=30 s exactos: el lease alcanzó su deadline; w2 debe poder tomarlo.
+  clock.time = seconds(30);
+  const calls = [];
+  const worker2 = createScheduler({
+    store,
+    clock,
+    execute: async (entry) => { calls.push(entry.id); },
+    workerId: "w2",
+  });
+  await worker2.runDue();
+
+  assert.equal(calls.length, 1, "w2 debe ejecutar el job al alcanzar el deadline");
+  const final = (await worker2.list()).find((entry) => entry.id === job.id);
+  assert.equal(final.status, "completed");
+});
