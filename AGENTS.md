@@ -36,7 +36,8 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   comparar con `<`/`>` en vez de `localeCompare`.
 - `now` antes de la transacción (acortaba el lease si había que esperar el turno): test en
   `adversarial.test.js`, arreglo leyendo `now` dentro de la transacción del claim.
+- Pasada por cancelación y persistencia: sin fallas nuevas; riesgo y supuestos en `NOTAS.md`.
 
 ## Pendiente
-- Revisión final (cancelación, persistencia, supuestos no verificados) antes de `review.json`.
+- Revisión final (cambio completo, evidencia, supuestos) antes de `review.json`.
 - Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.

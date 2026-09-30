@@ -98,3 +98,16 @@ también lo toma, aunque `w1` solo lleva 25 s.
 Lo que nunca debería pasar:
 
 > ya entiedi lo inaceptable es que el worker pierda tiempo de esos 5 segundso deberi tomar desd que tma el job, es inaceptabe que tome antes por el riesgo de solapamiento con otro worker que vio ya vencio  alas 30segundos
+
+## 2026-09-29 — Revisión de cancelación y persistencia
+
+Riesgo aceptado: `w1` toma un job y se cuelga. A los 30 s vence el lease y, si alguien llama
+a `runDue()`, vuelve a pending. `cancel()` puede cancelarlo aunque `w1` siga ejecutándolo.
+Si `w1` termina bien, el efecto se aplica pero el job queda `cancelled`. El registro queda
+mal; el servicio se entrega.
+
+Supuestos no verificados: el store responde dentro de la transacción sin promesas (como el
+de los tests públicos); si el store falla dos veces seguidas al cerrar un job, `runDue()` se
+detiene y no procesa el resto de esa llamada.
+
+> si anota en notas y sigamos con la revision final
