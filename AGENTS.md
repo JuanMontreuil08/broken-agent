@@ -38,6 +38,16 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   `adversarial.test.js`, arreglo leyendo `now` dentro de la transacción del claim.
 - Pasada por cancelación y persistencia: sin fallas nuevas; riesgo y supuestos en `NOTAS.md`.
 
-## Pendiente
-- Revisión final (cambio completo, evidencia, supuestos) antes de `review.json`.
-- Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.
+- Revisión final presentada a Juan (2026-09-29): cambio completo, evidencia (7/7 adversos,
+  7/7 `npm test`, 7/7 públicos oficiales) y supuestos/riesgos (ver `NOTAS.md`).
+- SHA-256 de `scheduler.js` al cierre de la sesión:
+  `ce508f998046281a0ab7e0aacaa0c972d09d2541561240e7d5eac02bc4b5a2b5` (recalcular si cambia).
+
+## Pendiente (retomar 2026-09-30)
+- Juan escribe `review.json` con sus palabras: `focus`, `failureScenario`, `evidence`,
+  `decision`, `confidence`, `remainingRisk` (textos de 20 a 1000 caracteres).
+- Revisar `review.json` solo contra el límite de caracteres y el SHA-256, sin cambiar sus palabras.
+- Juan corre `evaluate` (idealmente una sola vez: el ranking desempata por menos evaluaciones
+  y luego por hora del mejor envío).
+- Plazos (hora de Perú): ranking se revela el 2026-10-01 15:00; el challenge cierra el
+  2026-10-02 00:00.
