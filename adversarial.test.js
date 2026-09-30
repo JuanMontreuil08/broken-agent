@@ -201,3 +201,26 @@ test("traza 3: a los 30 s exactos otro worker puede tomar el job", async () => {
   const final = (await worker2.list()).find((entry) => entry.id === job.id);
   assert.equal(final.status, "completed");
 });
+
+// Debe homologar: no puede fallar por formas diferentes en que se escribe o expresa
+// el mismo instante.
+test("idempotencia: el mismo instante escrito de otra forma no se rechaza", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const scheduler = createScheduler({ store, clock, execute: async () => {}, workerId: "w1" });
+  await scheduler.schedule(job);
+
+  for (const runAt of [
+    "2026-10-17T15:00:00Z",
+    "2026-10-17T15:00:00.0Z",
+    "2026-10-17T10:00:00.00-05:00",
+    "2026-10-17T15:00:00+00:00",
+  ]) {
+    const result = await scheduler.schedule({ ...job, runAt });
+    assert.equal(result.runAt, job.runAt, `${runAt} debe devolver el job original`);
+  }
+  assert.equal((await scheduler.list()).length, 1);
+
+  // Un instante distinto con el mismo id se sigue rechazando.
+  await assert.rejects(scheduler.schedule({ ...job, runAt: "2026-10-17T15:00:00.001Z" }));
+});
