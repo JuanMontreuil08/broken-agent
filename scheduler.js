@@ -75,7 +75,8 @@ function createScheduler({ store, clock, execute, workerId }) {
           return clone(requested);
         }
         const identical =
-          existing.runAt === requested.runAt &&
+          // Mismo instante aunque se escriba distinto (fracción u offset).
+          Date.parse(existing.runAt) === Date.parse(requested.runAt) &&
           canonical(existing.payload) === canonical(requested.payload);
         if (!identical) throw new Error("A different job already uses this id");
         return clone(existing);

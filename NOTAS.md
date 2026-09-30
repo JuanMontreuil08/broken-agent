@@ -64,3 +64,13 @@ toma. Recién desde t=30,001 s alguien puede tomarlo.
 Lo que nunca debería pasar:
 
 > inaceptable que esper mas tiempo de os 30 segundos, en produccion si falla ddeb ser inmediato la recuperacio nsegun el contrato
+
+## 2026-09-29 — Idempotencia de schedule con el mismo instante escrito distinto
+
+Traza: se programa `job-1` con `2026-10-17T15:00:00.000Z`. Un reintento con
+`2026-10-17T15:00:00Z` (o `10:00:00-05:00`) se rechaza con "A different job already uses
+this id", porque `runAt` se comparaba como texto.
+
+Lo que nunca debería pasar:
+
+> debe homologar que no falle por formas difeentes en que se escribe o expresa la misma expresion

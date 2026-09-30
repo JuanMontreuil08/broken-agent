@@ -30,10 +30,11 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   `failed` solo es posible con un job nuevo de otro id (la API no permite reintentarlo).
 - Traza 3 (el lease no vencía a los 30 s exactos): test en `adversarial.test.js`,
   arreglo con `leaseUntil <= now`. También aplica al paso a `failed` de la traza 2b.
+- Idempotencia de `schedule`: decisión de Juan, mismo instante = mismo timestamp (fracción
+  u offset distintos). Arreglo: comparar `Date.parse`. Se devuelve el job original.
 
 ## Pendiente
 - `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
 - Por decidir con Juan:
-  - Idempotencia de `schedule`: ¿`15:00:00Z` y `15:00:00.000Z` son el mismo timestamp?
   - Desempate por id en `list()`: hoy usa `localeCompare` (depende del locale); ¿orden por código de carácter?
 - Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.
