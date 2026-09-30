@@ -46,3 +46,11 @@ Decisión:
 > ok por el limite entienod el contrto es la fuente de la verdad
 
 > yo pienso que onsiderar tanto failed como casos que el job se quedo colgado consider failed  paa trazabilidad pero omo recuperar ese job?
+
+Riesgo: si el 3.er intento se recupera y termina bien después de que el job quedó
+`failed`, el efecto se aplica igual, pero el job sigue `failed`. El registro queda mal;
+el servicio se entrega.
+
+> me preocupa que no se entrege el serviio si es que se restablece solo pero nosotro lo marcamos failed
+
+> si dejalo asi y agrega el riesgo a notas
