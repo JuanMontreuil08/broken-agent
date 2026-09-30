@@ -238,3 +238,41 @@ test("list: ante empate de runAt, ordena por código de carácter del id", async
   const ids = (await scheduler.list()).map((entry) => entry.id);
   assert.deepEqual(ids, ["A", "B", "a", "b", "job-2", "job_1"]);
 });
+
+// Es inaceptable que el worker pierda tiempo de su lease por esperar su turno en la base
+// de datos: los 30 s deben contar desde que toma el job, o se solapa con otro worker que
+// ya lo ve vencido a los 30 s.
+test("now: el lease cuenta desde que se toma el job, no desde antes de esperar la transacción", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const hung = blockingExecutor();
+  const worker1 = createScheduler({ store, clock, execute: hung.execute, workerId: "w1" });
+  await worker1.schedule(job);
+
+  // La base de datos está ocupada: la próxima transacción espera 5 s antes de correr.
+  const transaction = store.transaction.bind(store);
+  store.transaction = (action) => {
+    store.transaction = transaction;
+    return transaction((tx) => {
+      clock.time = seconds(5);
+      return action(tx);
+    });
+  };
+
+  // t=0: w1 pide el claim; recién a t=5 s lo obtiene.
+  worker1.runDue();
+  await hung.started;
+
+  // t=30 s: w1 lleva solo 25 s con el job; w2 no debe poder tomarlo.
+  clock.time = seconds(30);
+  const calls = [];
+  const worker2 = createScheduler({
+    store,
+    clock,
+    execute: async (entry) => { calls.push(entry.id); },
+    workerId: "w2",
+  });
+  await worker2.runDue();
+
+  assert.equal(calls.length, 0, "w2 no debe ejecutar el job mientras w1 sigue dentro de sus 30 s");
+});
