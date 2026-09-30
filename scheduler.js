@@ -105,7 +105,7 @@ function createScheduler({ store, clock, execute, workerId }) {
             if (
               job.status === "running" &&
               typeof job.leaseUntil === "number" &&
-              job.leaseUntil < now
+              job.leaseUntil <= now
             ) {
               // Un intento se cuenta al reclamar: si el 3.º se cayó sin avisar,
               // el job no se vuelve a ejecutar.

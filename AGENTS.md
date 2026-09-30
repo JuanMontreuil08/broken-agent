@@ -28,9 +28,10 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   límite de 3 también para caídas. Al vencer el lease con `attempts >= 3` el job pasa a
   `failed`. Riesgo aceptado: puede quedar `failed` aunque el efecto se aplicó. Recuperar un
   `failed` solo es posible con un job nuevo de otro id (la API no permite reintentarlo).
+- Traza 3 (el lease no vencía a los 30 s exactos): test en `adversarial.test.js`,
+  arreglo con `leaseUntil <= now`. También aplica al paso a `failed` de la traza 2b.
 
 ## Pendiente
-- Traza 3: el lease se considera vencido con `leaseUntil < now`; el contrato dice que al alcanzar el deadline (`<=`).
 - `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
 - Por decidir con Juan:
   - Idempotencia de `schedule`: ¿`15:00:00Z` y `15:00:00.000Z` son el mismo timestamp?

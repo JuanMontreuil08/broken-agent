@@ -54,3 +54,13 @@ el servicio se entrega.
 > me preocupa que no se entrege el serviio si es que se restablece solo pero nosotro lo marcamos failed
 
 > si dejalo asi y agrega el riesgo a notas
+
+## 2026-09-29 — Traza 3: el lease no vence al alcanzar el deadline
+
+Traza: t=0 `w1` toma el job y se cuelga; su lease dura hasta t=30 s. A los 30 s exactos
+`w2` llama a `runDue()`, pero el código compara `30000 < 30000`, que es falso, y no lo
+toma. Recién desde t=30,001 s alguien puede tomarlo.
+
+Lo que nunca debería pasar:
+
+> inaceptable que esper mas tiempo de os 30 segundos, en produccion si falla ddeb ser inmediato la recuperacio nsegun el contrato
