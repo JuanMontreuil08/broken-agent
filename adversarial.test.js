@@ -224,3 +224,17 @@ test("idempotencia: el mismo instante escrito de otra forma no se rechaza", asyn
   // Un instante distinto con el mismo id se sigue rechazando.
   await assert.rejects(scheduler.schedule({ ...job, runAt: "2026-10-17T15:00:00.001Z" }));
 });
+
+// El orden no puede depender del idioma del sistema: ante empate de runAt se ordena
+// por código de carácter del id.
+test("list: ante empate de runAt, ordena por código de carácter del id", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const scheduler = createScheduler({ store, clock, execute: async () => {}, workerId: "w1" });
+  for (const id of ["b", "job_1", "B", "a", "job-2", "A"]) {
+    await scheduler.schedule({ ...job, id });
+  }
+
+  const ids = (await scheduler.list()).map((entry) => entry.id);
+  assert.deepEqual(ids, ["A", "B", "a", "b", "job-2", "job_1"]);
+});
