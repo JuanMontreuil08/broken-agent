@@ -130,3 +130,45 @@ test("traza 2: tras la 3.ª ejecución fallida el job queda failed y no se ejecu
   await scheduler.runDue();
   assert.equal(calls.length, 3, "no debe haber una 4.ª ejecución");
 });
+
+// No tiene sentido que un job pase de 3 intentos: si el 3.º se cae sin avisar,
+// el job queda failed en vez de ejecutarse una 4.ª vez.
+test("traza 2b: si el 3.er intento se cae sin avisar, el job queda failed y no hay 4.ª ejecución", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const calls = [];
+  const failing = async (entry) => {
+    calls.push(entry.id);
+    throw new Error("falla");
+  };
+
+  // Intentos 1 y 2: fallan y avisan.
+  const worker1 = createScheduler({ store, clock, execute: failing, workerId: "w1" });
+  await worker1.schedule(job);
+  await worker1.runDue();
+  await worker1.runDue();
+
+  // Intento 3: el proceso queda colgado y nunca avisa.
+  const hung = blockingExecutor();
+  const worker2 = createScheduler({
+    store,
+    clock,
+    execute: (entry) => {
+      calls.push(entry.id);
+      return hung.execute(entry);
+    },
+    workerId: "w2",
+  });
+  worker2.runDue();
+  await hung.started;
+
+  // t=31: el lease venció; otro worker no debe ejecutarlo una 4.ª vez.
+  clock.time = seconds(31);
+  const worker3 = createScheduler({ store, clock, execute: failing, workerId: "w3" });
+  await worker3.runDue();
+
+  assert.equal(calls.length, 3, "no debe haber una 4.ª ejecución");
+  const final = (await worker3.list()).find((entry) => entry.id === job.id);
+  assert.equal(final.attempts, 3);
+  assert.equal(final.status, "failed");
+});
