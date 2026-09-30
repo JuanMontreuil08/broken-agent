@@ -45,7 +45,8 @@ function createScheduler({ store, clock, execute, workerId }) {
   };
   const ordered = (jobs) => jobs.sort((left, right) =>
     Date.parse(left.runAt) - Date.parse(right.runAt) ||
-    left.id.localeCompare(right.id),
+    // Por código de carácter: el orden no depende del idioma del sistema.
+    (left.id < right.id ? -1 : left.id > right.id ? 1 : 0),
   );
   const normalize = (input) => {
     if (!input || typeof input !== "object") throw new Error("Job is required");

@@ -74,3 +74,17 @@ this id", porque `runAt` se comparaba como texto.
 Lo que nunca debería pasar:
 
 > debe homologar que no falle por formas difeentes en que se escribe o expresa la misma expresion
+
+## 2026-09-29 — Orden por id en list()
+
+Traza: con el mismo `runAt`, `list()` desempataba con `localeCompare`, que depende del
+idioma y la versión del sistema. En esta máquina daba `a A b B job_1 job-2`; por código de
+carácter es `A B a b job-2 job_1`. Dos máquinas podían devolver órdenes distintos.
+
+Lo que pensé:
+
+> ok la list, ahi dependemos del idio de lsuauri oque pude ser muy diferetne y variado, deberia tomar un sestandar como ingles o que sugieres?
+
+Decisión:
+
+> si aplica el cambio con codigo de caracter y agreg en notas lo que acorado

@@ -32,9 +32,9 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   arreglo con `leaseUntil <= now`. También aplica al paso a `failed` de la traza 2b.
 - Idempotencia de `schedule`: decisión de Juan, mismo instante = mismo timestamp (fracción
   u offset distintos). Arreglo: comparar `Date.parse`. Se devuelve el job original.
+- Desempate por id en `list()`: decisión de Juan, código de carácter (no idioma). Arreglo:
+  comparar con `<`/`>` en vez de `localeCompare`.
 
 ## Pendiente
 - `now` se lee antes de entrar a la transacción del claim; podría estar desfasado.
-- Por decidir con Juan:
-  - Desempate por id en `list()`: hoy usa `localeCompare` (depende del locale); ¿orden por código de carácter?
 - Al final: Juan escribe `review.json`; calcular SHA-256; Juan corre `evaluate`.
