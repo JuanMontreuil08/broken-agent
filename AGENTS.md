@@ -40,14 +40,18 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
 
 - Revisión final presentada a Juan (2026-09-29): cambio completo, evidencia (7/7 adversos,
   7/7 `npm test`, 7/7 públicos oficiales) y supuestos/riesgos (ver `NOTAS.md`).
-- SHA-256 de `scheduler.js` al cierre de la sesión:
-  `ce508f998046281a0ab7e0aacaa0c972d09d2541561240e7d5eac02bc4b5a2b5` (recalcular si cambia).
+- 2026-09-30: `evaluate` falló con `SOLUTION_EXECUTION_FAILED` ("No se pudo cargar
+  scheduler.js"). Causa probable (no confirmada): `require("node:crypto")`. Arreglo: `claimId`
+  es el número de intento (`attempts + 1`), sin `require`. Test en `adversarial.test.js`.
+  8/8 adversos, 7/7 `npm test`, 7/7 públicos oficiales. No se sabe si el error consumió
+  una evaluación.
+- `review.json` escrito con las palabras de Juan (foco `concurrency`, `ship`, 80); largos y
+  SHA-256 revisados.
+- SHA-256 de `scheduler.js` vigente:
+  `cd1bfbfccbe912df7644b49020395ec6ffc9187332e39bc2558bed651e57299b` (recalcular si cambia).
 
-## Pendiente (retomar 2026-09-30)
-- Juan escribe `review.json` con sus palabras: `focus`, `failureScenario`, `evidence`,
-  `decision`, `confidence`, `remainingRisk` (textos de 20 a 1000 caracteres).
-- Revisar `review.json` solo contra el límite de caracteres y el SHA-256, sin cambiar sus palabras.
-- Juan corre `evaluate` (idealmente una sola vez: el ranking desempata por menos evaluaciones
-  y luego por hora del mejor envío).
+## Pendiente
+- Juan corre `evaluate` de nuevo (requiere aprobación nueva; el ranking desempata por menos
+  evaluaciones y luego por hora del mejor envío).
 - Plazos (hora de Perú): ranking se revela el 2026-10-01 15:00; el challenge cierra el
   2026-10-02 00:00.

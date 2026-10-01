@@ -1,0 +1,9 @@
+{
+  "sourceDigest": "cd1bfbfccbe912df7644b49020395ec6ffc9187332e39bc2558bed651e57299b",
+  "focus": "concurrency",
+  "failureScenario": "En t(0) se ejecuta el proceso y se cuelga, pasa el t(31) y se vuelve a lanzar y lo toma, en t(32) A devuelve el job a pending mientras B lo ejecuta. Ambos usando el mismo worker ID. t(33) otro worker ve pending y lo toma y así hay 2 workers que intentan ejecutar el job de actualización. Se puede ver posiblemente interrupción del servicio porque el backend espera a que termine de actualizar.",
+  "evidence": "La evidencia es el test en adversarial.test.js que fallaba con el código original. Me demostró que no tenía un guardrail que si fallaba ya no era owner del proceso. Con el ajuste del claim cada claim guarda un claimId único, ahora ya no solo toma worker id para evaluar sino el claim y con ello ya un segundo proceso ve si está vigente o no.",
+  "decision": "ship",
+  "confidence": 80,
+  "remainingRisk": "El riesgo es que el job quede failed aunque el efecto sí se aplicó. Lo puedo tolerar porque el servicio sí se entrega. Necesitaría ver si es posible que ese failed tenga otro metadata indicando si el servicio terminó de entregarse."
+}
