@@ -62,8 +62,11 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
 - SHA-256 de `scheduler.js` vigente:
   `65163ca66afd6bae119d148f6dc63e94d35371fd5a3db070882fa912d73e0a9e` (recalcular si cambia).
 
-## Pendiente
-- Juan decide si corre `evaluate` de nuevo (requiere aprobación nueva; el ranking desempata por menos
-  evaluaciones y luego por hora del mejor envío).
+## Pendiente (retomar 2026-10-01)
+- Juan decide: quedarse con 97 o atacar las dos fallas reales que quedan (`0000-02-29`
+  rechazado; `runDue()` se detiene si el store falla al cerrar un job). Recomendación dada:
+  no tocar sus decisiones de interpretación.
+- Si cambia `scheduler.js`: recalcular el SHA-256, actualizar `sourceDigest` en `review.json`
+  y Juan corre `evaluate` (aprobación nueva; quedan 2 de 5).
 - Plazos (hora de Perú): ranking se revela el 2026-10-01 15:00; el challenge cierra el
   2026-10-02 00:00.
