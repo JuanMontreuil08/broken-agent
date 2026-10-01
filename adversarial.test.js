@@ -276,3 +276,8 @@ test("now: el lease cuenta desde que se toma el job, no desde antes de esperar l
 
   assert.equal(calls.length, 0, "w2 no debe ejecutar el job mientras w1 sigue dentro de sus 30 s");
 });
+
+test("carga: scheduler.js no usa require ni import", () => {
+  const source = require("node:fs").readFileSync(require.resolve("./scheduler.js"), "utf8");
+  assert.doesNotMatch(source, /\brequire\s*\(|^\s*import\s/m, "el evaluador no carga scheduler.js si usa dependencias");
+});
