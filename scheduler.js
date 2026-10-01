@@ -41,11 +41,15 @@ function createScheduler({ store, clock, execute, workerId }) {
       offsetHourValue <= 23 && offsetMinuteValue <= 59 &&
       Number.isFinite(Date.parse(value));
   };
-  const ordered = (jobs) => jobs.sort((left, right) =>
-    Date.parse(left.runAt) - Date.parse(right.runAt) ||
-    // Por código de carácter: el orden no depende del idioma del sistema.
-    (left.id < right.id ? -1 : left.id > right.id ? 1 : 0),
-  );
+  // La fecha de cada job se interpreta una sola vez, no en cada comparación.
+  const ordered = (jobs) => jobs
+    .map((job) => ({ time: Date.parse(job.runAt), job }))
+    .sort((left, right) =>
+      left.time - right.time ||
+      // Por código de carácter: el orden no depende del idioma del sistema.
+      (left.job.id < right.job.id ? -1 : left.job.id > right.job.id ? 1 : 0),
+    )
+    .map((entry) => entry.job);
   const normalize = (input) => {
     if (!input || typeof input !== "object") throw new Error("Job is required");
     if (typeof input.id !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(input.id)) {
@@ -99,61 +103,78 @@ function createScheduler({ store, clock, execute, workerId }) {
     async runDue() {
       const visited = new Set();
       while (true) {
-        const claimed = await store.transaction((tx) => {
-          // La hora se lee dentro de la transacción: si hubo que esperar el turno,
-          // el lease igual dura 30 s desde que se toma el job.
+        // Una sola lectura completa del store por pasada: recupera los leases
+        // vencidos y anota, en orden, los jobs que se pueden tomar.
+        const candidates = await store.transaction((tx) => {
           const now = clock.now().getTime();
+          const due = [];
           for (const job of tx.list()) {
+            let status = job.status;
             if (
-              job.status === "running" &&
+              status === "running" &&
               typeof job.leaseUntil === "number" &&
               job.leaseUntil <= now
             ) {
               // Un intento se cuenta al reclamar: si el 3.º se cayó sin avisar,
               // el job no se vuelve a ejecutar.
-              tx.put({ ...job, status: job.attempts >= 3 ? "failed" : "pending" });
+              status = job.attempts >= 3 ? "failed" : "pending";
+              tx.put({ ...job, status });
             }
+            if (
+              status === "pending" &&
+              !visited.has(job.id) &&
+              Date.parse(job.runAt) <= now
+            ) due.push(job);
           }
-          const due = ordered(tx.list()).find((job) =>
-            job.status === "pending" &&
-            !visited.has(job.id) &&
-            Date.parse(job.runAt) <= now,
-          );
-          if (!due) return undefined;
-          const running = {
-            ...due,
-            status: "running",
-            attempts: due.attempts + 1,
-            owner: workerId,
-            // Identifica este claim en particular: un proceso que reinicia con el
-            // mismo workerId no debe poder cerrar el claim de otra ejecución.
-            // Es el número de intento: sube en cada claim, dentro de la transacción.
-            claimId: due.attempts + 1,
-            leaseUntil: now + 30_000,
-          };
-          tx.put(running);
-          return running;
+          return ordered(due).map((job) => job.id);
         });
-        if (!claimed) return;
-        visited.add(claimed.id);
-        const ownsClaim = (current) =>
-          current?.status === "running" && current.claimId === claimed.claimId;
+        // Se repite la pasada hasta que no quede nada por tomar: así entran los
+        // jobs que vencieron o se liberaron mientras se ejecutaban los anteriores.
+        if (candidates.length === 0) return;
 
-        try {
-          await execute(clone(claimed));
-          await store.transaction((tx) => {
-            const current = tx.get(claimed.id);
-            if (ownsClaim(current)) {
-              tx.put({ ...current, status: "completed" });
-            }
+        for (const id of candidates) {
+          const claimed = await store.transaction((tx) => {
+            // La hora se lee dentro de la transacción: si hubo que esperar el turno,
+            // el lease igual dura 30 s desde que se toma el job.
+            const now = clock.now().getTime();
+            // Se vuelve a leer el job: otro worker pudo tomarlo o cancelarlo.
+            const due = tx.get(id);
+            if (!due || due.status !== "pending") return undefined;
+            const running = {
+              ...due,
+              status: "running",
+              attempts: due.attempts + 1,
+              owner: workerId,
+              // Identifica este claim en particular: un proceso que reinicia con el
+              // mismo workerId no debe poder cerrar el claim de otra ejecución.
+              // Es el número de intento: sube en cada claim, dentro de la transacción.
+              claimId: due.attempts + 1,
+              leaseUntil: now + 30_000,
+            };
+            tx.put(running);
+            return running;
           });
-        } catch {
-          await store.transaction((tx) => {
-            const current = tx.get(claimed.id);
-            if (!ownsClaim(current)) return;
-            const status = current.attempts >= 3 ? "failed" : "pending";
-            tx.put({ ...current, status });
-          });
+          if (!claimed) continue;
+          visited.add(claimed.id);
+          const ownsClaim = (current) =>
+            current?.status === "running" && current.claimId === claimed.claimId;
+
+          try {
+            await execute(clone(claimed));
+            await store.transaction((tx) => {
+              const current = tx.get(claimed.id);
+              if (ownsClaim(current)) {
+                tx.put({ ...current, status: "completed" });
+              }
+            });
+          } catch {
+            await store.transaction((tx) => {
+              const current = tx.get(claimed.id);
+              if (!ownsClaim(current)) return;
+              const status = current.attempts >= 3 ? "failed" : "pending";
+              tx.put({ ...current, status });
+            });
+          }
         }
       }
     },
