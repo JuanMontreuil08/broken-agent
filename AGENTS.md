@@ -54,6 +54,8 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
 - Payload con arreglos con huecos o propiedades extra se aceptaba: test en
   `adversarial.test.js`, arreglo en `isJsonValue`.
 - Estado: 10/10 adversos, 7/7 `npm test`, 7/7 públicos oficiales.
+- 2026-09-30: 2.ª evaluación válida, con los arreglos de rendimiento y payload: 97/100.
+  Quedan 2 de 5.
 - Candidatos sin tocar: `0000-02-29` se rechaza (años 0000–0099); `runDue()` se detiene si el
   store falla al cerrar un job; decisiones de Juan donde el contrato admite otra lectura
   (lease vencido sin retomar, 3.er intento colgado, mismo instante escrito distinto).
