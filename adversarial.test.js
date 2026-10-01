@@ -281,3 +281,29 @@ test("carga: scheduler.js no usa require ni import", () => {
   const source = require("node:fs").readFileSync(require.resolve("./scheduler.js"), "utf8");
   assert.doesNotMatch(source, /\brequire\s*\(|^\s*import\s/m, "el evaluador no carga scheduler.js si usa dependencias");
 });
+
+test("rendimiento: runDue no vuelve a leer todo el store por cada job", async () => {
+  const store = new MemoryStore();
+  const clock = createClock();
+  const executed = [];
+  const scheduler = createScheduler({
+    store,
+    clock,
+    execute: async (entry) => { executed.push(entry.id); },
+    workerId: "w1",
+  });
+  const total = 50;
+  for (let index = 0; index < total; index += 1) {
+    await scheduler.schedule({ ...job, id: `job-${index}` });
+  }
+
+  // Cuenta las lecturas completas del store durante runDue.
+  let lists = 0;
+  const transaction = store.transaction.bind(store);
+  store.transaction = (action) => transaction((tx) =>
+    action({ ...tx, list: () => { lists += 1; return tx.list(); } }));
+  await scheduler.runDue();
+
+  assert.equal(executed.length, total, "debe ejecutar todos los jobs vencidos");
+  assert.ok(lists <= 5, `runDue leyó el store completo ${lists} veces para ${total} jobs`);
+});
