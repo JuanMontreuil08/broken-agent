@@ -307,3 +307,19 @@ test("rendimiento: runDue no vuelve a leer todo el store por cada job", async ()
   assert.equal(executed.length, total, "debe ejecutar todos los jobs vencidos");
   assert.ok(lists <= 5, `runDue leyó el store completo ${lists} veces para ${total} jobs`);
 });
+
+test("payload: un arreglo con huecos o con propiedades extra no es JSON estricto", async () => {
+  const scheduler = createScheduler({
+    store: new MemoryStore(),
+    clock: createClock(),
+    execute: async () => {},
+    workerId: "w1",
+  });
+  // eslint-disable-next-line no-sparse-arrays
+  await assert.rejects(() => scheduler.schedule({ ...job, id: "hueco", payload: [1, , 3] }));
+  await assert.rejects(() => scheduler.schedule({ ...job, id: "anidado", payload: { lista: new Array(2) } }));
+  const extra = [1, 2];
+  extra.nota = "x";
+  await assert.rejects(() => scheduler.schedule({ ...job, id: "extra", payload: extra }));
+  assert.equal((await scheduler.list()).length, 0);
+});
