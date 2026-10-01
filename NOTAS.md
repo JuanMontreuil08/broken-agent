@@ -111,3 +111,13 @@ de los tests públicos); si el store falla dos veces seguidas al cerrar un job, 
 detiene y no procesa el resto de esa llamada.
 
 > si anota en notas y sigamos con la revision final
+
+## 2026-09-30 — Rendimiento de runDue
+
+Traza: por cada job que ejecutaba, `runDue()` volvía a pedir la lista completa del store y
+la ordenaba. Con 50 jobs vencidos pedía la lista 102 veces; con 4000 jobs tardaba 23,5 s.
+Ahora pide la lista una vez por pasada y toma cada job por su id: 4000 jobs en 25 ms.
+
+> me parecen buenas evidencias, el pirmero entiendooptimiza el proceso demora menos y lee menos jobs entiendo consume menos recursos
+
+Precisión: no lee menos jobs, lee los mismos jobs menos veces.
