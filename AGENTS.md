@@ -47,11 +47,21 @@ Contexto para retomar el trabajo en este repo (challenge "Broken Agent #02 – T
   una evaluación.
 - `review.json` escrito con las palabras de Juan (foco `concurrency`, `ship`, 80); largos y
   SHA-256 revisados.
+- 2026-09-30: 1.ª evaluación válida: 92/100. Quedan 3 de 5 (el error de carga consumió una).
+- Rendimiento de `runDue` (releía y ordenaba todo el store por cada job; 4000 jobs = 23 s):
+  test en `adversarial.test.js`, arreglo con una lectura completa por pasada y claim por
+  `tx.get(id)`; se repite la pasada hasta que no quede nada por tomar.
+- Payload con arreglos con huecos o propiedades extra se aceptaba: test en
+  `adversarial.test.js`, arreglo en `isJsonValue`.
+- Estado: 10/10 adversos, 7/7 `npm test`, 7/7 públicos oficiales.
+- Candidatos sin tocar: `0000-02-29` se rechaza (años 0000–0099); `runDue()` se detiene si el
+  store falla al cerrar un job; decisiones de Juan donde el contrato admite otra lectura
+  (lease vencido sin retomar, 3.er intento colgado, mismo instante escrito distinto).
 - SHA-256 de `scheduler.js` vigente:
-  `cd1bfbfccbe912df7644b49020395ec6ffc9187332e39bc2558bed651e57299b` (recalcular si cambia).
+  `65163ca66afd6bae119d148f6dc63e94d35371fd5a3db070882fa912d73e0a9e` (recalcular si cambia).
 
 ## Pendiente
-- Juan corre `evaluate` de nuevo (requiere aprobación nueva; el ranking desempata por menos
+- Juan decide si corre `evaluate` de nuevo (requiere aprobación nueva; el ranking desempata por menos
   evaluaciones y luego por hora del mejor envío).
 - Plazos (hora de Perú): ranking se revela el 2026-10-01 15:00; el challenge cierra el
   2026-10-02 00:00.
