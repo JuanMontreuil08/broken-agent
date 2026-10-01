@@ -19,7 +19,10 @@ function createScheduler({ store, clock, execute, workerId }) {
     if (value === null) return true;
     if (["string", "boolean"].includes(typeof value)) return true;
     if (typeof value === "number") return Number.isFinite(value);
-    if (Array.isArray(value)) return value.every(isJsonValue);
+    if (Array.isArray(value)) {
+      // Sin huecos ni propiedades extra: JSON no puede representarlos.
+      return Object.keys(value).length === value.length && value.every(isJsonValue);
+    }
     if (!value || typeof value !== "object") return false;
     const prototype = Object.getPrototypeOf(value);
     if (prototype !== Object.prototype && prototype !== null) return false;

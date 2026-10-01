@@ -315,7 +315,6 @@ test("payload: un arreglo con huecos o con propiedades extra no es JSON estricto
     execute: async () => {},
     workerId: "w1",
   });
-  // eslint-disable-next-line no-sparse-arrays
   await assert.rejects(() => scheduler.schedule({ ...job, id: "hueco", payload: [1, , 3] }));
   await assert.rejects(() => scheduler.schedule({ ...job, id: "anidado", payload: { lista: new Array(2) } }));
   const extra = [1, 2];
